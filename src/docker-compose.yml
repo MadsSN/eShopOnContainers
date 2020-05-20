@@ -44,6 +44,15 @@ services:
       - sqldata
       - rabbitmq
 
+  stocktrader-api:
+    image: ${REGISTRY:-eshop}/stocktrader.api:${PLATFORM:-linux}-${TAG:-latest}
+    build:
+      context: .
+      dockerfile: Services/StockTrader/StockTrader.API/Dockerfile
+    depends_on:
+      - sqldata
+      - rabbitmq
+
   ordering-api:
     image: ${REGISTRY:-eshop}/ordering.api:${PLATFORM:-linux}-${TAG:-latest}
     build:

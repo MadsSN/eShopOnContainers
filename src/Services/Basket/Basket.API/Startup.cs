@@ -330,7 +330,7 @@ namespace Microsoft.eShopOnContainers.Services.Basket.API
         {
             var eventBus = app.ApplicationServices.GetRequiredService<IEventBus>();
 
-            eventBus.Subscribe<ProductPriceChangedIntegrationEvent, ProductPriceChangedIntegrationEventHandler>();
+            eventBus.Subscribe<ProductPricChangedIntegrationEvent, ProductPriceChangedIntegrationEventHandler>();
             eventBus.Subscribe<OrderStartedIntegrationEvent, OrderStartedIntegrationEventHandler>();
         }
     }

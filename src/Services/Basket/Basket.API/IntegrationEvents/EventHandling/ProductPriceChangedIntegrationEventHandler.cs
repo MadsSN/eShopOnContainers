@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.eShopOnContainers.Services.Basket.API.IntegrationEvents.EventHandling
 {
-    public class ProductPriceChangedIntegrationEventHandler : IIntegrationEventHandler<ProductPriceChangedIntegrationEvent>
+    public class ProductPriceChangedIntegrationEventHandler : IIntegrationEventHandler<ProductPricChangedIntegrationEvent>
     {
         private readonly ILogger<ProductPriceChangedIntegrationEventHandler> _logger;
         private readonly IBasketRepository _repository;
@@ -22,7 +22,7 @@ namespace Microsoft.eShopOnContainers.Services.Basket.API.IntegrationEvents.Even
             _repository = repository ?? throw new ArgumentNullException(nameof(repository));
         }
 
-        public async Task Handle(ProductPriceChangedIntegrationEvent @event)
+        public async Task Handle(ProductPricChangedIntegrationEvent @event)
         {
             using (LogContext.PushProperty("IntegrationEventContext", $"{@event.Id}-{Program.AppName}"))
             {
