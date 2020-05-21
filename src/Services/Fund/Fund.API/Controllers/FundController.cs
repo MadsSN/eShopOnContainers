@@ -1,10 +1,10 @@
-﻿using Catalog.API.IntegrationEvents;
+using Fund.API.IntegrationEvents;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.eShopOnContainers.Services.Catalog.API.Infrastructure;
-using Microsoft.eShopOnContainers.Services.Catalog.API.IntegrationEvents.Events;
-using Microsoft.eShopOnContainers.Services.Catalog.API.Model;
-using Microsoft.eShopOnContainers.Services.Catalog.API.ViewModel;
+using Microsoft.eShopOnContainers.Services.Fund.API.Infrastructure;
+using Microsoft.eShopOnContainers.Services.Fund.API.IntegrationEvents.Events;
+using Microsoft.eShopOnContainers.Services.Fund.API.Model;
+using Microsoft.eShopOnContainers.Services.Fund.API.ViewModel;
 using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
@@ -12,71 +12,30 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 
-namespace Microsoft.eShopOnContainers.Services.Catalog.API.Controllers
+namespace Microsoft.eShopOnContainers.Services.Fund.API.Controllers
 {
     [Route("api/v1/[controller]")]
     [ApiController]
-    public class StockTraderController : ControllerBase
+    public class FundController : ControllerBase
     {
-        private readonly StockTraderContext _stockTraderContext;
-        private readonly StockTraderSettings _settings;
-        private readonly ICatalogIntegrationEventService _catalogIntegrationEventService;
+        private readonly FundContext _catalogContext;
+        private readonly FundSettings _settings;
+        private readonly IFundIntegrationEventService _catalogIntegrationEventService;
 
-        public StockTraderController(StockTraderContext context, IOptionsSnapshot<StockTraderSettings> settings, ICatalogIntegrationEventService catalogIntegrationEventService)
+        public FundController(FundContext context, IOptionsSnapshot<FundSettings> settings, IFundIntegrationEventService catalogIntegrationEventService)
         {
-            _stockTraderContext = context ?? throw new ArgumentNullException(nameof(context));
+            _catalogContext = context ?? throw new ArgumentNullException(nameof(context));
             _catalogIntegrationEventService = catalogIntegrationEventService ?? throw new ArgumentNullException(nameof(catalogIntegrationEventService));
             _settings = settings.Value;
 
             context.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
         }
 
-        [HttpPost]
-        [Route("traders")]
-        [ProducesResponseType((int)HttpStatusCode.Created)]
-        public async Task<IActionResult> CreateStockTraderAsync([FromBody]Model.StockTrader trader)
-        {
-            var item = new Model.StockTrader
-            {
-                Name = trader.Name
-            };
-
-            _stockTraderContext.StockTraders.Add(item);
-            var priceChangedEvent = new StockTraderCreatedIntegrationEvent(item.Id, item.Name);
-            await _catalogIntegrationEventService.SaveEventAndCatalogContextChangesAsync(priceChangedEvent);
-            await _catalogIntegrationEventService.PublishThroughEventBusAsync(priceChangedEvent);
-
-
-            return CreatedAtAction(nameof(TradersByIdAsync), new { id = item.Id }, null);
-        }
-
-        [HttpGet]
-        [Route("traders/{id:int}")]
-        [ProducesResponseType((int)HttpStatusCode.NotFound)]
-        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
-        [ProducesResponseType(typeof(Model.StockTrader), (int)HttpStatusCode.OK)]
-        public async Task<ActionResult<Model.StockTrader>> TradersByIdAsync(int id)
-        {
-            if (id <= 0)
-            {
-                return BadRequest();
-            }
-
-            var item = await _stockTraderContext.StockTraders.SingleOrDefaultAsync(ci => ci.Id == id);
-
-            if (item != null)
-            {
-                return item;
-            }
-
-            return NotFound();
-        }
-
         // GET api/v1/[controller]/items[?pageSize=3&pageIndex=10]
         [HttpGet]
         [Route("items")]
-        [ProducesResponseType(typeof(PaginatedItemsViewModel<CatalogItem>), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(IEnumerable<CatalogItem>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(PaginatedItemsViewModel<FundItem>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(IEnumerable<FundItem>), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         public async Task<IActionResult> ItemsAsync([FromQuery]int pageSize = 10, [FromQuery]int pageIndex = 0, string ids = null)
         {
@@ -92,10 +51,10 @@ namespace Microsoft.eShopOnContainers.Services.Catalog.API.Controllers
                 return Ok(items);
             }
 
-            var totalItems = await _stockTraderContext.CatalogItems
+            var totalItems = await _catalogContext.FundItems
                 .LongCountAsync();
 
-            var itemsOnPage = await _stockTraderContext.CatalogItems
+            var itemsOnPage = await _catalogContext.FundItems
                 .OrderBy(c => c.Name)
                 .Skip(pageSize * pageIndex)
                 .Take(pageSize)
@@ -112,24 +71,24 @@ namespace Microsoft.eShopOnContainers.Services.Catalog.API.Controllers
 
             itemsOnPage = ChangeUriPlaceholder(itemsOnPage);
 
-            var model = new PaginatedItemsViewModel<CatalogItem>(pageIndex, pageSize, totalItems, itemsOnPage);
+            var model = new PaginatedItemsViewModel<FundItem>(pageIndex, pageSize, totalItems, itemsOnPage);
 
             return Ok(model);
         }
 
-        private async Task<List<CatalogItem>> GetItemsByIdsAsync(string ids)
+        private async Task<List<FundItem>> GetItemsByIdsAsync(string ids)
         {
             var numIds = ids.Split(',').Select(id => (Ok: int.TryParse(id, out int x), Value: x));
 
             if (!numIds.All(nid => nid.Ok))
             {
-                return new List<CatalogItem>();
+                return new List<FundItem>();
             }
 
             var idsToSelect = numIds
                 .Select(id => id.Value);
 
-            var items = await _stockTraderContext.CatalogItems.Where(ci => idsToSelect.Contains(ci.Id)).ToListAsync();
+            var items = await _catalogContext.FundItems.Where(ci => idsToSelect.Contains(ci.Id)).ToListAsync();
 
             items = ChangeUriPlaceholder(items);
 
@@ -140,15 +99,15 @@ namespace Microsoft.eShopOnContainers.Services.Catalog.API.Controllers
         [Route("items/{id:int}")]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
-        [ProducesResponseType(typeof(CatalogItem), (int)HttpStatusCode.OK)]
-        public async Task<ActionResult<CatalogItem>> ItemByIdAsync(int id)
+        [ProducesResponseType(typeof(FundItem), (int)HttpStatusCode.OK)]
+        public async Task<ActionResult<FundItem>> ItemByIdAsync(int id)
         {
             if (id <= 0)
             {
                 return BadRequest();
             }
 
-            var item = await _stockTraderContext.CatalogItems.SingleOrDefaultAsync(ci => ci.Id == id);
+            var item = await _catalogContext.FundItems.SingleOrDefaultAsync(ci => ci.Id == id);
 
             var baseUri = _settings.PicBaseUrl;
             var azureStorageEnabled = _settings.AzureStorageEnabled;
@@ -166,14 +125,14 @@ namespace Microsoft.eShopOnContainers.Services.Catalog.API.Controllers
         // GET api/v1/[controller]/items/withname/samplename[?pageSize=3&pageIndex=10]
         [HttpGet]
         [Route("items/withname/{name:minlength(1)}")]
-        [ProducesResponseType(typeof(PaginatedItemsViewModel<CatalogItem>), (int)HttpStatusCode.OK)]
-        public async Task<ActionResult<PaginatedItemsViewModel<CatalogItem>>> ItemsWithNameAsync(string name, [FromQuery]int pageSize = 10, [FromQuery]int pageIndex = 0)
+        [ProducesResponseType(typeof(PaginatedItemsViewModel<FundItem>), (int)HttpStatusCode.OK)]
+        public async Task<ActionResult<PaginatedItemsViewModel<FundItem>>> ItemsWithNameAsync(string name, [FromQuery]int pageSize = 10, [FromQuery]int pageIndex = 0)
         {
-            var totalItems = await _stockTraderContext.CatalogItems
+            var totalItems = await _catalogContext.FundItems
                 .Where(c => c.Name.StartsWith(name))
                 .LongCountAsync();
 
-            var itemsOnPage = await _stockTraderContext.CatalogItems
+            var itemsOnPage = await _catalogContext.FundItems
                 .Where(c => c.Name.StartsWith(name))
                 .Skip(pageSize * pageIndex)
                 .Take(pageSize)
@@ -181,22 +140,22 @@ namespace Microsoft.eShopOnContainers.Services.Catalog.API.Controllers
 
             itemsOnPage = ChangeUriPlaceholder(itemsOnPage);
 
-            return new PaginatedItemsViewModel<CatalogItem>(pageIndex, pageSize, totalItems, itemsOnPage);
+            return new PaginatedItemsViewModel<FundItem>(pageIndex, pageSize, totalItems, itemsOnPage);
         }
 
         // GET api/v1/[controller]/items/type/1/brand[?pageSize=3&pageIndex=10]
         [HttpGet]
         [Route("items/type/{catalogTypeId}/brand/{catalogBrandId:int?}")]
-        [ProducesResponseType(typeof(PaginatedItemsViewModel<CatalogItem>), (int)HttpStatusCode.OK)]
-        public async Task<ActionResult<PaginatedItemsViewModel<CatalogItem>>> ItemsByTypeIdAndBrandIdAsync(int catalogTypeId, int? catalogBrandId, [FromQuery]int pageSize = 10, [FromQuery]int pageIndex = 0)
+        [ProducesResponseType(typeof(PaginatedItemsViewModel<FundItem>), (int)HttpStatusCode.OK)]
+        public async Task<ActionResult<PaginatedItemsViewModel<FundItem>>> ItemsByTypeIdAndBrandIdAsync(int catalogTypeId, int? catalogBrandId, [FromQuery]int pageSize = 10, [FromQuery]int pageIndex = 0)
         {
-            var root = (IQueryable<CatalogItem>)_stockTraderContext.CatalogItems;
+            var root = (IQueryable<FundItem>)_catalogContext.FundItems;
 
-            root = root.Where(ci => ci.CatalogTypeId == catalogTypeId);
+            root = root.Where(ci => ci.FundTypeId == catalogTypeId);
 
             if (catalogBrandId.HasValue)
             {
-                root = root.Where(ci => ci.CatalogBrandId == catalogBrandId);
+                root = root.Where(ci => ci.FundBrandId == catalogBrandId);
             }
 
             var totalItems = await root
@@ -209,20 +168,20 @@ namespace Microsoft.eShopOnContainers.Services.Catalog.API.Controllers
 
             itemsOnPage = ChangeUriPlaceholder(itemsOnPage);
 
-            return new PaginatedItemsViewModel<CatalogItem>(pageIndex, pageSize, totalItems, itemsOnPage);
+            return new PaginatedItemsViewModel<FundItem>(pageIndex, pageSize, totalItems, itemsOnPage);
         }
 
         // GET api/v1/[controller]/items/type/all/brand[?pageSize=3&pageIndex=10]
         [HttpGet]
         [Route("items/type/all/brand/{catalogBrandId:int?}")]
-        [ProducesResponseType(typeof(PaginatedItemsViewModel<CatalogItem>), (int)HttpStatusCode.OK)]
-        public async Task<ActionResult<PaginatedItemsViewModel<CatalogItem>>> ItemsByBrandIdAsync(int? catalogBrandId, [FromQuery]int pageSize = 10, [FromQuery]int pageIndex = 0)
+        [ProducesResponseType(typeof(PaginatedItemsViewModel<FundItem>), (int)HttpStatusCode.OK)]
+        public async Task<ActionResult<PaginatedItemsViewModel<FundItem>>> ItemsByBrandIdAsync(int? catalogBrandId, [FromQuery]int pageSize = 10, [FromQuery]int pageIndex = 0)
         {
-            var root = (IQueryable<CatalogItem>)_stockTraderContext.CatalogItems;
+            var root = (IQueryable<FundItem>)_catalogContext.FundItems;
 
             if (catalogBrandId.HasValue)
             {
-                root = root.Where(ci => ci.CatalogBrandId == catalogBrandId);
+                root = root.Where(ci => ci.FundBrandId == catalogBrandId);
             }
 
             var totalItems = await root
@@ -235,25 +194,25 @@ namespace Microsoft.eShopOnContainers.Services.Catalog.API.Controllers
 
             itemsOnPage = ChangeUriPlaceholder(itemsOnPage);
 
-            return new PaginatedItemsViewModel<CatalogItem>(pageIndex, pageSize, totalItems, itemsOnPage);
+            return new PaginatedItemsViewModel<FundItem>(pageIndex, pageSize, totalItems, itemsOnPage);
         }
 
-        // GET api/v1/[controller]/CatalogTypes
+        // GET api/v1/[controller]/FundTypes
         [HttpGet]
         [Route("catalogtypes")]
-        [ProducesResponseType(typeof(List<CatalogType>), (int)HttpStatusCode.OK)]
-        public async Task<ActionResult<List<CatalogType>>> CatalogTypesAsync()
+        [ProducesResponseType(typeof(List<FundType>), (int)HttpStatusCode.OK)]
+        public async Task<ActionResult<List<FundType>>> FundTypesAsync()
         {
-            return await _stockTraderContext.CatalogTypes.ToListAsync();
+            return await _catalogContext.FundTypes.ToListAsync();
         }
 
-        // GET api/v1/[controller]/CatalogBrands
+        // GET api/v1/[controller]/FundBrands
         [HttpGet]
         [Route("catalogbrands")]
-        [ProducesResponseType(typeof(List<CatalogBrand>), (int)HttpStatusCode.OK)]
-        public async Task<ActionResult<List<CatalogBrand>>> CatalogBrandsAsync()
+        [ProducesResponseType(typeof(List<FundBrand>), (int)HttpStatusCode.OK)]
+        public async Task<ActionResult<List<FundBrand>>> FundBrandsAsync()
         {
-            return await _stockTraderContext.CatalogBrands.ToListAsync();
+            return await _catalogContext.FundBrands.ToListAsync();
         }
 
         //PUT api/v1/[controller]/items
@@ -261,9 +220,9 @@ namespace Microsoft.eShopOnContainers.Services.Catalog.API.Controllers
         [HttpPut]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         [ProducesResponseType((int)HttpStatusCode.Created)]
-        public async Task<ActionResult> UpdateProductAsync([FromBody]CatalogItem productToUpdate)
+        public async Task<ActionResult> UpdateProductAsync([FromBody]FundItem productToUpdate)
         {
-            var catalogItem = await _stockTraderContext.CatalogItems.SingleOrDefaultAsync(i => i.Id == productToUpdate.Id);
+            var catalogItem = await _catalogContext.FundItems.SingleOrDefaultAsync(i => i.Id == productToUpdate.Id);
 
             if (catalogItem == null)
             {
@@ -275,22 +234,22 @@ namespace Microsoft.eShopOnContainers.Services.Catalog.API.Controllers
 
             // Update current product
             catalogItem = productToUpdate;
-            _stockTraderContext.CatalogItems.Update(catalogItem);
+            _catalogContext.FundItems.Update(catalogItem);
 
             if (raiseProductPriceChangedEvent) // Save product's data and publish integration event through the Event Bus if price has changed
             {
                 //Create Integration Event to be published through the Event Bus
                 var priceChangedEvent = new ProductPriceChangedIntegrationEvent(catalogItem.Id, productToUpdate.Price, oldPrice);
 
-                // Achieving atomicity between original Catalog database operation and the IntegrationEventLog thanks to a local transaction
-                await _catalogIntegrationEventService.SaveEventAndCatalogContextChangesAsync(priceChangedEvent);
+                // Achieving atomicity between original Fund database operation and the IntegrationEventLog thanks to a local transaction
+                await _catalogIntegrationEventService.SaveEventAndFundContextChangesAsync(priceChangedEvent);
 
                 // Publish through the Event Bus and mark the saved event as published
                 await _catalogIntegrationEventService.PublishThroughEventBusAsync(priceChangedEvent);
             }
             else // Just save the updated product because the Product's Price hasn't changed.
             {
-                await _stockTraderContext.SaveChangesAsync();
+                await _catalogContext.SaveChangesAsync();
             }
 
             return CreatedAtAction(nameof(ItemByIdAsync), new { id = productToUpdate.Id }, null);
@@ -300,21 +259,21 @@ namespace Microsoft.eShopOnContainers.Services.Catalog.API.Controllers
         [Route("items")]
         [HttpPost]
         [ProducesResponseType((int)HttpStatusCode.Created)]
-        public async Task<ActionResult> CreateProductAsync([FromBody]CatalogItem product)
+        public async Task<ActionResult> CreateProductAsync([FromBody]FundItem product)
         {
-            var item = new CatalogItem
+            var item = new FundItem
             {
-                CatalogBrandId = product.CatalogBrandId,
-                CatalogTypeId = product.CatalogTypeId,
+                FundBrandId = product.FundBrandId,
+                FundTypeId = product.FundTypeId,
                 Description = product.Description,
                 Name = product.Name,
                 PictureFileName = product.PictureFileName,
                 Price = product.Price
             };
 
-            _stockTraderContext.CatalogItems.Add(item);
+            _catalogContext.FundItems.Add(item);
 
-            await _stockTraderContext.SaveChangesAsync();
+            await _catalogContext.SaveChangesAsync();
 
             return CreatedAtAction(nameof(ItemByIdAsync), new { id = item.Id }, null);
         }
@@ -326,21 +285,21 @@ namespace Microsoft.eShopOnContainers.Services.Catalog.API.Controllers
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         public async Task<ActionResult> DeleteProductAsync(int id)
         {
-            var product = _stockTraderContext.CatalogItems.SingleOrDefault(x => x.Id == id);
+            var product = _catalogContext.FundItems.SingleOrDefault(x => x.Id == id);
 
             if (product == null)
             {
                 return NotFound();
             }
 
-            _stockTraderContext.CatalogItems.Remove(product);
+            _catalogContext.FundItems.Remove(product);
 
-            await _stockTraderContext.SaveChangesAsync();
+            await _catalogContext.SaveChangesAsync();
 
             return NoContent();
         }
 
-        private List<CatalogItem> ChangeUriPlaceholder(List<CatalogItem> items)
+        private List<FundItem> ChangeUriPlaceholder(List<FundItem> items)
         {
             var baseUri = _settings.PicBaseUrl;
             var azureStorageEnabled = _settings.AzureStorageEnabled;
