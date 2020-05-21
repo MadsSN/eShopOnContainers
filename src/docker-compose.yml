@@ -53,6 +53,15 @@ services:
       - sqldata
       - rabbitmq
 
+  fund-api:
+    image: ${REGISTRY:-eshop}/fund.api:${PLATFORM:-linux}-${TAG:-latest}
+    build:
+      context: .
+      dockerfile: Services/Fund/Fund.API/Dockerfile
+    depends_on:
+      - sqldata
+      - rabbitmq
+
   ordering-api:
     image: ${REGISTRY:-eshop}/ordering.api:${PLATFORM:-linux}-${TAG:-latest}
     build:
