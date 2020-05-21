@@ -10,15 +10,11 @@ namespace Microsoft.eShopOnContainers.Services.Fund.API.Infrastructure
         public FundContext(DbContextOptions<FundContext> options) : base(options)
         {
         }
-        public DbSet<FundItem> FundItems { get; set; }
-        public DbSet<FundBrand> FundBrands { get; set; }
-        public DbSet<FundType> FundTypes { get; set; }
+        public DbSet<Account> Accounts { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
-            builder.ApplyConfiguration(new FundBrandEntityTypeConfiguration());
-            builder.ApplyConfiguration(new FundTypeEntityTypeConfiguration());
-            builder.ApplyConfiguration(new FundItemEntityTypeConfiguration());
+            builder.ApplyConfiguration(new AccountEntityTypeConfiguration());
         }     
     }
 

@@ -36,16 +36,7 @@ namespace Microsoft.eShopOnContainers.Services.Fund.API
                 var host = CreateHostBuilder(configuration, args);
 
                 Log.Information("Applying migrations ({ApplicationContext})...", AppName);
-                host.MigrateDbContext<FundContext>((context, services) =>
-                {
-                    var env = services.GetService<IWebHostEnvironment>();
-                    var settings = services.GetService<IOptions<FundSettings>>();
-                    var logger = services.GetService<ILogger<FundContextSeed>>();
-
-                    new FundContextSeed()
-                        .SeedAsync(context, env, settings, logger)
-                        .Wait();
-                })
+                host.MigrateDbContext<FundContext>((_, __) => { })
                 .MigrateDbContext<IntegrationEventLogContext>((_, __) => { });
 
                 Log.Information("Starting web host ({ApplicationContext})...", AppName);

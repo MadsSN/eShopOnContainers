@@ -20,7 +20,6 @@ using Microsoft.eShopOnContainers.BuildingBlocks.IntegrationEventLogEF;
 using Microsoft.eShopOnContainers.BuildingBlocks.IntegrationEventLogEF.Services;
 using Microsoft.eShopOnContainers.Services.Fund.API.Infrastructure;
 using Microsoft.eShopOnContainers.Services.Fund.API.IntegrationEvents.EventHandling;
-using Microsoft.eShopOnContainers.Services.Fund.API.IntegrationEvents.Events;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -32,6 +31,7 @@ using System;
 using System.Data.Common;
 using System.IO;
 using System.Reflection;
+using Microsoft.eShopOnContainers.Services.Catalog.API.IntegrationEvents.Events;
 
 namespace Microsoft.eShopOnContainers.Services.Fund.API
 {
@@ -121,8 +121,7 @@ namespace Microsoft.eShopOnContainers.Services.Fund.API
         protected virtual void ConfigureEventBus(IApplicationBuilder app)
         {
             var eventBus = app.ApplicationServices.GetRequiredService<IEventBus>();
-            eventBus.Subscribe<OrderStatusChangedToAwaitingValidationIntegrationEvent, OrderStatusChangedToAwaitingValidationIntegrationEventHandler>();
-            eventBus.Subscribe<OrderStatusChangedToPaidIntegrationEvent, OrderStatusChangedToPaidIntegrationEventHandler>();
+            eventBus.Subscribe<StockTraderCreatedIntegrationEvent, StockTraderCreatedIntegrationEventHandler>();
         }
     }
 
@@ -362,8 +361,7 @@ namespace Microsoft.eShopOnContainers.Services.Fund.API
             }
 
             services.AddSingleton<IEventBusSubscriptionsManager, InMemoryEventBusSubscriptionsManager>();
-            services.AddTransient<OrderStatusChangedToAwaitingValidationIntegrationEventHandler>();
-            services.AddTransient<OrderStatusChangedToPaidIntegrationEventHandler>();
+            services.AddTransient<StockTraderCreatedIntegrationEventHandler>();
 
             return services;
         }

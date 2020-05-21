@@ -2,8 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using FundApi;
+
 using Grpc.Core;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.eShopOnContainers.Services.Fund.API;
 using Microsoft.eShopOnContainers.Services.Fund.API.Infrastructure;
@@ -11,11 +12,10 @@ using Microsoft.eShopOnContainers.Services.Fund.API.Model;
 using Microsoft.eShopOnContainers.Services.Fund.API.ViewModel;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using static FundApi.Fund;
 
 namespace Fund.API.Grpc
 {
-    public class FundService : FundBase
+    public class FundService : ControllerBase
     {
         private readonly FundContext _catalogContext;
         private readonly FundSettings _settings;
@@ -26,17 +26,18 @@ namespace Fund.API.Grpc
             _catalogContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
             _logger = logger;
         }
+        /*
 
-        public override async Task<FundItemResponse> GetItemById(FundItemRequest request, ServerCallContext context)
+        public override async Task<CatalogItemRequest> GetItemById(CatalogItemRequest request, ServerCallContext context)
         {
             _logger.LogInformation("Begin grpc call FundService.GetItemById for product id {Id}", request.Id);
             if (request.Id <= 0)
             {
-                context.Status = new Status(StatusCode.FailedPrecondition, $"Id must be > 0 (received {request.Id})");
+                context.Status = new Status(global::Grpc.Core.StatusCode.FailedPrecondition, $"Id must be > 0 (received {request.Id})");
                 return null;
             }
 
-            var item = await _catalogContext.FundItems.SingleOrDefaultAsync(ci => ci.Id == request.Id);
+            var item = await _catalogContext.Accounts.SingleOrDefaultAsync(ci => ci.Id == request.Id);
             var baseUri = _settings.PicBaseUrl;
             var azureStorageEnabled = _settings.AzureStorageEnabled;
             item.FillProductUrl(baseUri, azureStorageEnabled: azureStorageEnabled);
@@ -58,7 +59,7 @@ namespace Fund.API.Grpc
                 };
             }
 
-            context.Status = new Status(StatusCode.NotFound, $"Product with id {request.Id} do not exist");
+            context.Status = new Status(global::Grpc.Core.StatusCode.NotFound, $"Product with id {request.Id} do not exist");
             return null;
         }
 
@@ -70,44 +71,36 @@ namespace Fund.API.Grpc
 
                 if (!items.Any())
                 {
-                    context.Status = new Status(StatusCode.NotFound, $"ids value invalid. Must be comma-separated list of numbers");
+                    context.Status = new Status(global::Grpc.Core.StatusCode.NotFound, $"ids value invalid. Must be comma-separated list of numbers");
                 }
-                context.Status = new Status(StatusCode.OK, string.Empty);
+                context.Status = new Status(global::Grpc.Core.StatusCode.OK, string.Empty);
                 return this.MapToResponse(items);
             }
 
-            var totalItems = await _catalogContext.FundItems
+            var totalItems = await _catalogContext.Accounts
                 .LongCountAsync();
 
-            var itemsOnPage = await _catalogContext.FundItems
+            var itemsOnPage = await _catalogContext.Accounts
                 .OrderBy(c => c.Name)
                 .Skip(request.PageSize * request.PageIndex)
                 .Take(request.PageSize)
                 .ToListAsync();
 
-            /* The "awesome" fix for testing Devspaces */
-
-            /*
-            foreach (var pr in itemsOnPage) {
-                pr.Name = "Awesome " + pr.Name;
-            }
-
-            */
 
             itemsOnPage = ChangeUriPlaceholder(itemsOnPage);
 
             var model = this.MapToResponse(itemsOnPage, totalItems, request.PageIndex, request.PageSize);
-            context.Status = new Status(StatusCode.OK, string.Empty);
+            context.Status = new Status(global::Grpc.Core.StatusCode.OK, string.Empty);
 
             return model;
         }
 
-        private PaginatedItemsResponse MapToResponse(List<FundItem> items)
+        private PaginatedItemsResponse MapToResponse(List<Account> items)
         {
             return this.MapToResponse(items, items.Count(), 1, items.Count());
         }
 
-        private PaginatedItemsResponse MapToResponse(List<FundItem> items, long count, int pageIndex, int pageSize)
+        private PaginatedItemsResponse MapToResponse(List<Account> items, long count, int pageIndex, int pageSize)
         {
             var result = new PaginatedItemsResponse()
             {
@@ -120,14 +113,14 @@ namespace Fund.API.Grpc
             {
                 var brand = i.FundBrand == null
                             ? null
-                            : new FundApi.FundBrand()
+                            : new FundBrand()
                             {
                                 Id = i.FundBrand.Id,
                                 Name = i.FundBrand.Brand,
                             };
                 var catalogType = i.FundType == null
                                   ? null
-                                  : new FundApi.FundType()
+                                  : new FundType()
                                   {
                                       Id = i.FundType.Id,
                                       Type = i.FundType.Type,
@@ -154,26 +147,26 @@ namespace Fund.API.Grpc
         }
 
 
-        private async Task<List<FundItem>> GetItemsByIdsAsync(string ids)
+        private async Task<List<Account>> GetItemsByIdsAsync(string ids)
         {
             var numIds = ids.Split(',').Select(id => (Ok: int.TryParse(id, out int x), Value: x));
 
             if (!numIds.All(nid => nid.Ok))
             {
-                return new List<FundItem>();
+                return new List<Account>();
             }
 
             var idsToSelect = numIds
                 .Select(id => id.Value);
 
-            var items = await _catalogContext.FundItems.Where(ci => idsToSelect.Contains(ci.Id)).ToListAsync();
+            var items = await _catalogContext.Accounts.Where(ci => idsToSelect.Contains(ci.Id)).ToListAsync();
 
             items = ChangeUriPlaceholder(items);
 
             return items;
         }
 
-        private List<FundItem> ChangeUriPlaceholder(List<FundItem> items)
+        private List<Account> ChangeUriPlaceholder(List<Account> items)
         {
             var baseUri = _settings.PicBaseUrl;
             var azureStorageEnabled = _settings.AzureStorageEnabled;
@@ -185,5 +178,6 @@ namespace Fund.API.Grpc
 
             return items;
         }
+        */
     }
 }
