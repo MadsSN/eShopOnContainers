@@ -9,10 +9,17 @@ namespace Microsoft.eShopOnContainers.Services.Fund.API.Infrastructure.EntityCon
     {
         public void Configure(EntityTypeBuilder<Account> builder)
         {
-            builder.ToTable("Fund");
+            builder.ToTable("Account");
+
+            builder.HasKey(ci => ci.Id);
 
             builder.Property(ci => ci.Id)
+                .UseHiLo("account_hilo")
                 .IsRequired();
+
+            builder.Property(ci => ci.StockTraderId)
+                .IsRequired();
+
 
             builder.Property(ci => ci.Credit)
                 .IsRequired();

@@ -2,28 +2,35 @@
 
 namespace Fund.API.Infrastructure.FundMigrations
 {
-    public partial class InitialFund : Migration
+    public partial class InitialAccount : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.CreateSequence(
+                name: "account_hilo",
+                incrementBy: 10);
+
             migrationBuilder.CreateTable(
-                name: "Fund",
+                name: "Account",
                 columns: table => new
                 {
-                    Id = table.Column<int>(nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Id = table.Column<int>(nullable: false),
+                    StockTraderId = table.Column<int>(nullable: false),
                     Credit = table.Column<decimal>(nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Fund", x => x.Id);
+                    table.PrimaryKey("PK_Account", x => x.Id);
                 });
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "Fund");
+                name: "Account");
+
+            migrationBuilder.DropSequence(
+                name: "account_hilo");
         }
     }
 }

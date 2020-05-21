@@ -167,14 +167,14 @@ namespace Microsoft.eShopOnContainers.Services.Fund.API
                 .AddSqlServer(
                     configuration["ConnectionString"],
                     name: "FundDB-check",
-                    tags: new string[] { "catalogdb" });
+                    tags: new string[] { "funddb" });
 
             if (!string.IsNullOrEmpty(accountName) && !string.IsNullOrEmpty(accountKey))
             {
                 hcBuilder
                     .AddAzureBlobStorage(
                         $"DefaultEndpointsProtocol=https;AccountName={accountName};AccountKey={accountKey};EndpointSuffix=core.windows.net",
-                        name: "catalog-storage-check",
+                        name: "fund-storage-check",
                         tags: new string[] { "catalogstorage" });
             }
 
@@ -184,7 +184,7 @@ namespace Microsoft.eShopOnContainers.Services.Fund.API
                     .AddAzureServiceBusTopic(
                         configuration["EventBusConnection"],
                         topicName: "eshop_event_bus",
-                        name: "catalog-servicebus-check",
+                        name: "fund-servicebus-check",
                         tags: new string[] { "servicebus" });
             }
             else
@@ -192,7 +192,7 @@ namespace Microsoft.eShopOnContainers.Services.Fund.API
                 hcBuilder
                     .AddRabbitMQ(
                         $"amqp://{configuration["EventBusConnection"]}",
-                        name: "catalog-rabbitmqbus-check",
+                        name: "fund-rabbitmqbus-check",
                         tags: new string[] { "rabbitmqbus" });
             }
 

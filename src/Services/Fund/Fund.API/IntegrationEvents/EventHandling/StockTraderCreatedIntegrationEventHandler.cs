@@ -32,7 +32,7 @@ namespace Microsoft.eShopOnContainers.Services.Fund.API.IntegrationEvents.EventH
                 await _fundContext.Accounts.AddAsync(new Account()
                 {
                     Credit = 0,
-                    Id = @event.StockTraderId
+                    StockTraderId = @event.StockTraderId
                 });
 
                  await _fundContext.SaveChangesAsync();

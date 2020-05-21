@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using Microsoft.eShopOnContainers.Services.Catalog.API.IntegrationEvents.Events;
 
 namespace Microsoft.eShopOnContainers.Services.Fund.API.Controllers
 {
@@ -16,14 +17,14 @@ namespace Microsoft.eShopOnContainers.Services.Fund.API.Controllers
     [ApiController]
     public class FundController : ControllerBase
     {
-        private readonly FundContext _catalogContext;
+        private readonly FundContext _fundContext;
         private readonly FundSettings _settings;
-        private readonly IFundIntegrationEventService _catalogIntegrationEventService;
+        private readonly IFundIntegrationEventService _fundIntegrationEventService;
 
         public FundController(FundContext context, IOptionsSnapshot<FundSettings> settings, IFundIntegrationEventService catalogIntegrationEventService)
         {
-            _catalogContext = context ?? throw new ArgumentNullException(nameof(context));
-            _catalogIntegrationEventService = catalogIntegrationEventService ?? throw new ArgumentNullException(nameof(catalogIntegrationEventService));
+            _fundContext = context ?? throw new ArgumentNullException(nameof(context));
+            _fundIntegrationEventService = catalogIntegrationEventService ?? throw new ArgumentNullException(nameof(catalogIntegrationEventService));
             _settings = settings.Value;
 
             context.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
@@ -35,7 +36,7 @@ namespace Microsoft.eShopOnContainers.Services.Fund.API.Controllers
         [ProducesResponseType(typeof(IEnumerable<Account>), (int)HttpStatusCode.OK)]
         public async Task<IActionResult> AccountsAsync()
         {
-            return Ok(await _catalogContext.Accounts.ToListAsync());
+            return Ok(await _fundContext.Accounts.ToListAsync());
         }
 
 
@@ -44,14 +45,14 @@ namespace Microsoft.eShopOnContainers.Services.Fund.API.Controllers
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(Account), (int)HttpStatusCode.OK)]
-        public async Task<ActionResult<Account>> ItemByIdAsync(int id)
+        public async Task<ActionResult<Account>> AccountByIdAsync(int id)
         {
             if (id <= 0)
             {
                 return BadRequest();
             }
 
-            var item = await _catalogContext.Accounts.SingleOrDefaultAsync(ci => ci.Id == id);
+            var item = await _fundContext.Accounts.SingleOrDefaultAsync(ci => ci.Id == id);
 
 
             if (item != null)
@@ -61,6 +62,38 @@ namespace Microsoft.eShopOnContainers.Services.Fund.API.Controllers
 
             return NotFound();
         }
+
+        [HttpPut]
+        [Route("accounts/{stockTraderId:int}/{deposit:int}")]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType(typeof(Account), (int)HttpStatusCode.OK)]
+        public async Task<ActionResult<Account>> UpdateAccountAsync(int stockTraderId, int deposit)
+        {
+            if (stockTraderId <= 0)
+            {
+                return BadRequest();
+            }
+
+            var item = await _fundContext.Accounts.SingleOrDefaultAsync(ci => ci.StockTraderId == stockTraderId);
+
+
+            if (item == null)
+            {
+                return NotFound();
+            }
+
+            item.Credit += deposit;
+            _fundContext.Accounts.Update(item);
+
+            var @event = new AccountCreditChangedIntegrationEvent(item.StockTraderId, item.Credit - deposit, item.Credit);
+            await _fundIntegrationEventService.SaveEventAndFundContextChangesAsync(@event);
+            await _fundIntegrationEventService.PublishThroughEventBusAsync(@event);
+
+            return Ok(item);
+        }
+
+
         /*
         // GET api/v1/[controller]/items/withname/samplename[?pageSize=3&pageIndex=10]
         [HttpGet]
@@ -68,11 +101,11 @@ namespace Microsoft.eShopOnContainers.Services.Fund.API.Controllers
         [ProducesResponseType(typeof(PaginatedItemsViewModel<Account>), (int)HttpStatusCode.OK)]
         public async Task<ActionResult<PaginatedItemsViewModel<Account>>> ItemsWithNameAsync(string name, [FromQuery]int pageSize = 10, [FromQuery]int pageIndex = 0)
         {
-            var totalItems = await _catalogContext.Accounts
+            var totalItems = await _fundContext.Accounts
                 .Where(c => c.Name.StartsWith(name))
                 .LongCountAsync();
 
-            var itemsOnPage = await _catalogContext.Accounts
+            var itemsOnPage = await _fundContext.Accounts
                 .Where(c => c.Name.StartsWith(name))
                 .Skip(pageSize * pageIndex)
                 .Take(pageSize)
@@ -89,7 +122,7 @@ namespace Microsoft.eShopOnContainers.Services.Fund.API.Controllers
         [ProducesResponseType(typeof(PaginatedItemsViewModel<Account>), (int)HttpStatusCode.OK)]
         public async Task<ActionResult<PaginatedItemsViewModel<Account>>> ItemsByTypeIdAndBrandIdAsync(int catalogTypeId, int? catalogBrandId, [FromQuery]int pageSize = 10, [FromQuery]int pageIndex = 0)
         {
-            var root = (IQueryable<Account>)_catalogContext.Accounts;
+            var root = (IQueryable<Account>)_fundContext.Accounts;
 
             root = root.Where(ci => ci.FundTypeId == catalogTypeId);
 
@@ -117,7 +150,7 @@ namespace Microsoft.eShopOnContainers.Services.Fund.API.Controllers
         [ProducesResponseType(typeof(PaginatedItemsViewModel<Account>), (int)HttpStatusCode.OK)]
         public async Task<ActionResult<PaginatedItemsViewModel<Account>>> ItemsByBrandIdAsync(int? catalogBrandId, [FromQuery]int pageSize = 10, [FromQuery]int pageIndex = 0)
         {
-            var root = (IQueryable<Account>)_catalogContext.Accounts;
+            var root = (IQueryable<Account>)_fundContext.Accounts;
 
             if (catalogBrandId.HasValue)
             {
@@ -143,7 +176,7 @@ namespace Microsoft.eShopOnContainers.Services.Fund.API.Controllers
         [ProducesResponseType(typeof(List<FundType>), (int)HttpStatusCode.OK)]
         public async Task<ActionResult<List<FundType>>> FundTypesAsync()
         {
-            return await _catalogContext.FundTypes.ToListAsync();
+            return await _fundContext.FundTypes.ToListAsync();
         }
 
         // GET api/v1/[controller]/FundBrands
@@ -152,7 +185,7 @@ namespace Microsoft.eShopOnContainers.Services.Fund.API.Controllers
         [ProducesResponseType(typeof(List<FundBrand>), (int)HttpStatusCode.OK)]
         public async Task<ActionResult<List<FundBrand>>> FundBrandsAsync()
         {
-            return await _catalogContext.FundBrands.ToListAsync();
+            return await _fundContext.FundBrands.ToListAsync();
         }
 
         //PUT api/v1/[controller]/items
@@ -162,7 +195,7 @@ namespace Microsoft.eShopOnContainers.Services.Fund.API.Controllers
         [ProducesResponseType((int)HttpStatusCode.Created)]
         public async Task<ActionResult> UpdateProductAsync([FromBody]Account productToUpdate)
         {
-            var catalogItem = await _catalogContext.Accounts.SingleOrDefaultAsync(i => i.Id == productToUpdate.Id);
+            var catalogItem = await _fundContext.Accounts.SingleOrDefaultAsync(i => i.Id == productToUpdate.Id);
 
             if (catalogItem == null)
             {
@@ -174,7 +207,7 @@ namespace Microsoft.eShopOnContainers.Services.Fund.API.Controllers
 
             // Update current product
             catalogItem = productToUpdate;
-            _catalogContext.Accounts.Update(catalogItem);
+            _fundContext.Accounts.Update(catalogItem);
 
             if (raiseProductPriceChangedEvent) // Save product's data and publish integration event through the Event Bus if price has changed
             {
@@ -182,14 +215,14 @@ namespace Microsoft.eShopOnContainers.Services.Fund.API.Controllers
                 var priceChangedEvent = new ProductPriceChangedIntegrationEvent(catalogItem.Id, productToUpdate.Price, oldPrice);
 
                 // Achieving atomicity between original Fund database operation and the IntegrationEventLog thanks to a local transaction
-                await _catalogIntegrationEventService.SaveEventAndFundContextChangesAsync(priceChangedEvent);
+                await _fundIntegrationEventService.SaveEventAndFundContextChangesAsync(priceChangedEvent);
 
                 // Publish through the Event Bus and mark the saved event as published
-                await _catalogIntegrationEventService.PublishThroughEventBusAsync(priceChangedEvent);
+                await _fundIntegrationEventService.PublishThroughEventBusAsync(priceChangedEvent);
             }
             else // Just save the updated product because the Product's Price hasn't changed.
             {
-                await _catalogContext.SaveChangesAsync();
+                await _fundContext.SaveChangesAsync();
             }
 
             return CreatedAtAction(nameof(ItemByIdAsync), new { id = productToUpdate.Id }, null);
@@ -211,9 +244,9 @@ namespace Microsoft.eShopOnContainers.Services.Fund.API.Controllers
                 Price = product.Price
             };
 
-            _catalogContext.Accounts.Add(item);
+            _fundContext.Accounts.Add(item);
 
-            await _catalogContext.SaveChangesAsync();
+            await _fundContext.SaveChangesAsync();
 
             return CreatedAtAction(nameof(ItemByIdAsync), new { id = item.Id }, null);
         }
@@ -225,16 +258,16 @@ namespace Microsoft.eShopOnContainers.Services.Fund.API.Controllers
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         public async Task<ActionResult> DeleteProductAsync(int id)
         {
-            var product = _catalogContext.Accounts.SingleOrDefault(x => x.Id == id);
+            var product = _fundContext.Accounts.SingleOrDefault(x => x.Id == id);
 
             if (product == null)
             {
                 return NotFound();
             }
 
-            _catalogContext.Accounts.Remove(product);
+            _fundContext.Accounts.Remove(product);
 
-            await _catalogContext.SaveChangesAsync();
+            await _fundContext.SaveChangesAsync();
 
             return NoContent();
         }

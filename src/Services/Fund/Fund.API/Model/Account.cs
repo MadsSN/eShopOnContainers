@@ -7,6 +7,8 @@ namespace Microsoft.eShopOnContainers.Services.Fund.API.Model
     {
         public int Id { get; set; }
 
+        public int StockTraderId { get; set; }
+
         public decimal Credit { get; set; }
 
         public Account() { }

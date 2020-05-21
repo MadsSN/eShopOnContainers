@@ -24,7 +24,7 @@ namespace Microsoft.eShopOnContainers.Services.Fund.API.Infrastructure
         public FundContext CreateDbContext(string[] args)
         {
             var optionsBuilder =  new DbContextOptionsBuilder<FundContext>()
-                .UseSqlServer("Server=.;Initial Fund=Microsoft.eShopOnContainers.Services.FundDb;Integrated Security=true");
+                .UseSqlServer("Server=.;Initial Catalog=Microsoft.eShopOnContainers.Services.FundDb;Integrated Security=true");
 
             return new FundContext(optionsBuilder.Options);
         }

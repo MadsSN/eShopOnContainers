@@ -9,8 +9,8 @@ using Microsoft.eShopOnContainers.Services.Fund.API.Infrastructure;
 namespace Fund.API.Infrastructure.FundMigrations
 {
     [DbContext(typeof(FundContext))]
-    [Migration("20200521074934_InitialFund")]
-    partial class InitialFund
+    [Migration("20200521085100_InitialAccount")]
+    partial class InitialAccount
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -18,6 +18,7 @@ namespace Fund.API.Infrastructure.FundMigrations
             modelBuilder
                 .HasAnnotation("ProductVersion", "3.1.4")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
+                .HasAnnotation("Relational:Sequence:.account_hilo", "'account_hilo', '', '1', '10', '', '', 'Int64', 'False'")
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
             modelBuilder.Entity("Microsoft.eShopOnContainers.Services.Fund.API.Model.Account", b =>
@@ -25,14 +26,18 @@ namespace Fund.API.Infrastructure.FundMigrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .HasAnnotation("SqlServer:HiLoSequenceName", "account_hilo")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.SequenceHiLo);
 
                     b.Property<decimal>("Credit")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<int>("StockTraderId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
-                    b.ToTable("Fund");
+                    b.ToTable("Account");
                 });
 #pragma warning restore 612, 618
         }
