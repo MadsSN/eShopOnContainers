@@ -62,6 +62,15 @@ services:
       - sqldata
       - rabbitmq
 
+  stock-api:
+    image: ${REGISTRY:-eshop}/stock.api:${PLATFORM:-linux}-${TAG:-latest}
+    build:
+      context: .
+      dockerfile: Services/Stock/Stock.API/Dockerfile
+    depends_on:
+      - sqldata
+      - rabbitmq
+
   ordering-api:
     image: ${REGISTRY:-eshop}/ordering.api:${PLATFORM:-linux}-${TAG:-latest}
     build:

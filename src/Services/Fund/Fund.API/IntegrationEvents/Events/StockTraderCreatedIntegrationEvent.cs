@@ -6,6 +6,7 @@ namespace Microsoft.eShopOnContainers.Services.Catalog.API.IntegrationEvents.Eve
     {
         public int StockTraderId { get; private set; }
 
+        //In principal this should only include the desired/needed 
         public string Name { get; private set; }
 
 
