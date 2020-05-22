@@ -7,6 +7,5 @@ Get-ChildItem -Path $to -Recurse -Include $from* | Rename-Item -NewName { $_.Nam
 $files = Get-ChildItem -Path $to -Recurse -Include *.cs, *.csproj, *.json
 
 Foreach($file in $files){
-	
 	(Get-Content $file.FullName).replace($from, $to) | Set-Content $file.FullName
 }

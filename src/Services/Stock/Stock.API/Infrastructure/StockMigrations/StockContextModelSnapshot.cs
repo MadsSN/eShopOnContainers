@@ -17,6 +17,7 @@ namespace Stock.API.Infrastructure.StockMigrations
                 .HasAnnotation("ProductVersion", "3.1.4")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("Relational:Sequence:.stock_hilo", "'stock_hilo', '', '1', '10', '', '', 'Int64', 'False'")
+                .HasAnnotation("Relational:Sequence:.stock_trader_hilo", "'stock_trader_hilo', '', '1', '10', '', '', 'Int64', 'False'")
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
             modelBuilder.Entity("Microsoft.eShopOnContainers.Services.Stock.API.Model.Stock", b =>
@@ -34,9 +35,28 @@ namespace Stock.API.Infrastructure.StockMigrations
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<int>("TotalShares")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.ToTable("Stock");
+                });
+
+            modelBuilder.Entity("Microsoft.eShopOnContainers.Services.Stock.API.Model.StockTrader", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:HiLoSequenceName", "stock_trader_hilo")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.SequenceHiLo);
+
+                    b.Property<int>("StockTraderId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("StockTrader");
                 });
 #pragma warning restore 612, 618
         }

@@ -29,13 +29,12 @@ namespace Microsoft.eShopOnContainers.Services.Stock.API.IntegrationEvents.Event
             {
                 _logger.LogInformation("----- Handling integration event: {IntegrationEventId} at {AppName} - ({@IntegrationEvent})", @event.Id, Program.AppName, @event);
 
-             //   await _stockContext.Stocks.AddAsync(new Model.Stock()
-             //   {
-              //      Credit = 0,
-              //      StockTraderId = @event.StockTraderId
-               // });
+                await _stockContext.StockTraders.AddAsync(new Model.StockTrader()
+                {
+                    StockTraderId = @event.StockTraderId,
+                });
 
-               //  await _stockContext.SaveChangesAsync();
+                 await _stockContext.SaveChangesAsync();
 
             }
         }

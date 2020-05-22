@@ -24,6 +24,7 @@ COPY "Services/Basket/Basket.UnitTests/Basket.UnitTests.csproj" "Services/Basket
 COPY "Services/StockTrader/StockTrader.API/StockTrader.API.csproj" "Services/StockTrader/StockTrader.API/StockTrader.API.csproj"
 COPY "Services/Catalog/Catalog.API/Catalog.API.csproj" "Services/Catalog/Catalog.API/Catalog.API.csproj"
 	COPY "Services/Fund/Fund.API/Fund.API.csproj" "Services/Fund/Fund.API/Fund.API.csproj"
+	COPY "Services/ShareOwner/ShareOwner.API/ShareOwner.API.csproj" "Services/ShareOwner/ShareOwner.API/ShareOwner.API.csproj"
 	COPY "Services/Stock/Stock.API/Stock.API.csproj" "Services/Stock/Stock.API/Stock.API.csproj"
 COPY "Services/Catalog/Catalog.FunctionalTests/Catalog.FunctionalTests.csproj" "Services/Catalog/Catalog.FunctionalTests/Catalog.FunctionalTests.csproj"
 COPY "Services/Catalog/Catalog.UnitTests/Catalog.UnitTests.csproj" "Services/Catalog/Catalog.UnitTests/Catalog.UnitTests.csproj"

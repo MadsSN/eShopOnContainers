@@ -71,6 +71,15 @@ services:
       - sqldata
       - rabbitmq
 
+  shareowner-api:
+    image: ${REGISTRY:-eshop}/shareowner.api:${PLATFORM:-linux}-${TAG:-latest}
+    build:
+      context: .
+      dockerfile: Services/ShareOwner/ShareOwner.API/Dockerfile
+    depends_on:
+      - sqldata
+      - rabbitmq
+
   ordering-api:
     image: ${REGISTRY:-eshop}/ordering.api:${PLATFORM:-linux}-${TAG:-latest}
     build:

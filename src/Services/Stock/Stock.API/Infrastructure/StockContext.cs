@@ -13,9 +13,12 @@ namespace Microsoft.eShopOnContainers.Services.Stock.API.Infrastructure
         }
         public DbSet<Stock> Stocks { get; set; }
 
+        public DbSet<StockTrader> StockTraders { get; set; }
+
         protected override void OnModelCreating(ModelBuilder builder)
         {
             builder.ApplyConfiguration(new StockEntityTypeConfiguration());
+            builder.ApplyConfiguration(new StockTraderEntityTypeConfiguration());
         }     
     }
 

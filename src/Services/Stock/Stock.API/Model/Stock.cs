@@ -13,6 +13,9 @@ namespace Microsoft.eShopOnContainers.Services.Stock.API.Model
         [Range(0d, 1000000000d)]
         public decimal Price { get; set; }
 
+        [Range(1, 000000000d)]
+        public int TotalShares { get; set; }
+
         public Stock() { }
     }
 }
