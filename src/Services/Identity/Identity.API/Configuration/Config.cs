@@ -259,6 +259,21 @@ namespace Microsoft.eShopOnContainers.Services.Identity.API.Configuration
                 },
                 new Client
                 {
+                    ClientId = "template1swaggerui",
+                    ClientName = "Template1 Swagger UI",
+                    AllowedGrantTypes = GrantTypes.Implicit,
+                    AllowAccessTokensViaBrowser = true,
+
+                    RedirectUris = { $"{clientsUrl["OrderingApi"]}/swagger/oauth2-redirect.html" },
+                    PostLogoutRedirectUris = { $"{clientsUrl["Template1Api"]}/swagger/" },
+
+                    AllowedScopes =
+                    {
+                        "template1"
+                    }
+                },
+                new Client
+                {
                     ClientId = "mobileshoppingaggswaggerui",
                     ClientName = "Mobile Shopping Aggregattor Swagger UI",
                     AllowedGrantTypes = GrantTypes.Implicit,

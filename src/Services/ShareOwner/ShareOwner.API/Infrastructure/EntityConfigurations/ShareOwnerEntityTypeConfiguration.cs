@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.eShopOnContainers.Services.ShareOwner.API.Model;
+using System;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Microsoft.eShopOnContainers.Services.ShareOwner.API.Infrastructure.EntityConfigurations
 {
@@ -25,6 +27,10 @@ namespace Microsoft.eShopOnContainers.Services.ShareOwner.API.Infrastructure.Ent
 
             builder.Property(ci => ci.Shares)
                 .IsRequired();
+
+            builder.HasMany(ci => ci.Reservations)
+                .WithOne()
+                .HasForeignKey(reservation => reservation.ShareOwnerId);
         }
     }
 
@@ -43,6 +49,10 @@ namespace Microsoft.eShopOnContainers.Services.ShareOwner.API.Infrastructure.Ent
 
             builder.Property(ci => ci.Reserved)
                 .IsRequired();
+
+            builder.Property(ci => ci.Status)
+                .IsRequired()
+                .HasConversion(new EnumToStringConverter<ReservationStatus>());
         }
     }
 }

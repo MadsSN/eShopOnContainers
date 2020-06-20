@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Microsoft.eShopOnContainers.BuildingBlocks.EventBus.Events;
 using Microsoft.eShopOnContainers.Services.Catalog.API.IntegrationEvents.Events;
 using Microsoft.eShopOnContainers.Services.ShareOwner.API.Model;
 

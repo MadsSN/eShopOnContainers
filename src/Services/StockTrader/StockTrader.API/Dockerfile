@@ -23,6 +23,8 @@ COPY "Services/Basket/Basket.FunctionalTests/Basket.FunctionalTests.csproj" "Ser
 COPY "Services/Basket/Basket.UnitTests/Basket.UnitTests.csproj" "Services/Basket/Basket.UnitTests/Basket.UnitTests.csproj"
 COPY "Services/Catalog/Catalog.API/Catalog.API.csproj" "Services/Catalog/Catalog.API/Catalog.API.csproj"
 	COPY "Services/Fund/Fund.API/Fund.API.csproj" "Services/Fund/Fund.API/Fund.API.csproj"
+	COPY "Services/Template1/Template1.API/Template1.API.csproj" "Services/Template1/Template1.API/Template1.API.csproj"
+	COPY "Services/Order/Order.API/Order.API.csproj" "Services/Order/Order.API/Order.API.csproj"
 	COPY "Services/ShareOwner/ShareOwner.API/ShareOwner.API.csproj" "Services/ShareOwner/ShareOwner.API/ShareOwner.API.csproj"
 	COPY "Services/Stock/Stock.API/Stock.API.csproj" "Services/Stock/Stock.API/Stock.API.csproj"
 COPY "Services/StockTrader/StockTrader.API/StockTrader.API.csproj" "Services/StockTrader/StockTrader.API/StockTrader.API.csproj"

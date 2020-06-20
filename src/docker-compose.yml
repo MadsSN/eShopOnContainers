@@ -80,6 +80,25 @@ services:
       - sqldata
       - rabbitmq
 
+  order-api:
+    image: ${REGISTRY:-eshop}/order.api:${PLATFORM:-linux}-${TAG:-latest}
+    build:
+      context: .
+      dockerfile: Services/Order/Order.API/Dockerfile
+    depends_on:
+      - sqldata
+      - rabbitmq
+
+  template1-api:
+    image: ${REGISTRY:-eshop}/template1.api:${PLATFORM:-linux}-${TAG:-latest}
+    build:
+      context: .
+      dockerfile: Services/Template1/Template1.API/Dockerfile
+    depends_on:
+      - sqldata
+      - identity-api
+      - rabbitmq
+
   ordering-api:
     image: ${REGISTRY:-eshop}/ordering.api:${PLATFORM:-linux}-${TAG:-latest}
     build:

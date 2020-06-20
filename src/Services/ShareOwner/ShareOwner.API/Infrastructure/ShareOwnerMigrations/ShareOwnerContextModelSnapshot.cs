@@ -31,10 +31,19 @@ namespace ShareOwner.API.Infrastructure.ShareOwnerMigrations
                     b.Property<decimal>("Reserved")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<int>("SalesOrderId")
+                        .HasColumnType("int");
+
                     b.Property<int>("ShareOwnerId")
                         .HasColumnType("int");
 
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("ShareOwnerId");
 
                     b.ToTable("Reservation");
                 });
@@ -59,6 +68,15 @@ namespace ShareOwner.API.Infrastructure.ShareOwnerMigrations
                     b.HasKey("Id");
 
                     b.ToTable("ShareOwner");
+                });
+
+            modelBuilder.Entity("Microsoft.eShopOnContainers.Services.ShareOwner.API.Model.Reservation", b =>
+                {
+                    b.HasOne("Microsoft.eShopOnContainers.Services.ShareOwner.API.Model.ShareOwner", null)
+                        .WithMany("Reservations")
+                        .HasForeignKey("ShareOwnerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

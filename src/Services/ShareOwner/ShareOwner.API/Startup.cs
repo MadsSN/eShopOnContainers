@@ -122,6 +122,7 @@ namespace Microsoft.eShopOnContainers.Services.ShareOwner.API
         {
             var eventBus = app.ApplicationServices.GetRequiredService<IEventBus>();
             eventBus.Subscribe<NewStockOwnerIntegrationEvent, NewStockOwnerIntegrationEventHandler>();
+            eventBus.Subscribe<SalesOrderPendingValidationIntegrationEvent, SalesOrderPendingValidationIntegrationEventHandler>();
         }
     }
 
@@ -362,6 +363,7 @@ namespace Microsoft.eShopOnContainers.Services.ShareOwner.API
 
             services.AddSingleton<IEventBusSubscriptionsManager, InMemoryEventBusSubscriptionsManager>();
             services.AddTransient<NewStockOwnerIntegrationEventHandler>();
+            services.AddTransient<SalesOrderPendingValidationIntegrationEventHandler>();
 
             return services;
         }

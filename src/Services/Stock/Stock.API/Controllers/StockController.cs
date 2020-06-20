@@ -120,7 +120,7 @@ namespace Microsoft.eShopOnContainers.Services.Stock.API.Controllers
             };
 
             _stockContext.Stocks.Update(createStock);
-            var @event = new NewStockOwnerIntegrationEvent(createStock.Id, request.Shares, request.StockTraderId);
+            var @event = new NewStockOwnerIntegrationEvent(createStock.Id, request.Shares, request.StockTraderId, request.Price);
 
             await _stockIntegrationEventService.SaveEventAndStockContextChangesAsync(@event);
             await _stockIntegrationEventService.PublishThroughEventBusAsync(@event);

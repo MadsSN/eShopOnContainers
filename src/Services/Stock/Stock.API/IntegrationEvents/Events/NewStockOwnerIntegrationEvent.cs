@@ -8,13 +8,16 @@ namespace Microsoft.eShopOnContainers.Services.Catalog.API.IntegrationEvents.Eve
 
         public decimal Shares { get; private set; }
 
+        public decimal Price { get; private set; }
+
         public int StockTraderId { get; set; }
 
-        public NewStockOwnerIntegrationEvent(int stockId, decimal shares, int stockTraderId)
+        public NewStockOwnerIntegrationEvent(int stockId, decimal shares, int stockTraderId, decimal price)
         {
             StockId = stockId;
             Shares = shares;
             StockTraderId = stockTraderId;
+            Price = price;
         }
     }
 }

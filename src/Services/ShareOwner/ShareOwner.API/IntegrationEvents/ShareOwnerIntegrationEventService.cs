@@ -11,6 +11,7 @@ using Serilog.Context;
 using System;
 using System.Data.Common;
 using System.Threading.Tasks;
+using Microsoft.eShopOnContainers.BuildingBlocks.IntegrationEventLogEF;
 
 namespace ShareOwner.API.IntegrationEvents
 {
@@ -63,6 +64,14 @@ namespace ShareOwner.API.IntegrationEvents
                 // Achieving atomicity between original catalog database operation and the IntegrationEventLog thanks to a local transaction
                 await _catalogContext.SaveChangesAsync();
                 await _eventLogService.SaveEventAsync(evt, _catalogContext.Database.CurrentTransaction);
+            });
+        }
+
+        public async Task SaveEventAsync(IntegrationEvent @event)
+        {
+            await ResilientTransaction.New(_catalogContext).ExecuteAsync(async () =>
+            {
+                await _eventLogService.SaveEventAsync(@event, _catalogContext.Database.CurrentTransaction);
             });
         }
     }

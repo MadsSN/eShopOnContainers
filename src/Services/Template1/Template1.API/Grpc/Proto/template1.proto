@@ -1,0 +1,28 @@
+﻿syntax = "proto3";
+
+package Template1Api;
+
+
+/* >>
+import "google/api/annotations.proto";
+<< */
+
+message Template1ItemRequest {
+	string id = 1;
+}
+
+message Template1ItemResponse {
+	string id = 1;
+	string name = 2;
+}
+
+
+service Template1 {
+  rpc GetItemById (Template1ItemRequest) returns (Template1ItemResponse) {	
+	  /* >>
+  	option (google.api.http) = {
+        get: "/api/v1/catalog/items/{id}"
+      };
+	<< */
+	}
+}

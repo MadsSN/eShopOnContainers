@@ -73,7 +73,9 @@ namespace Microsoft.eShopOnContainers.Services.ShareOwner.API.Controllers
         [ProducesResponseType(typeof(Model.ShareOwner), (int)HttpStatusCode.OK)]
         public async Task<ActionResult<Model.ShareOwner>> UpdateAccountAsync([FromBody] Reservation reservation)
         {
-            var shareOwner = await _shareownerContext.ShareOwners.SingleOrDefaultAsync(ci => ci.Id == reservation.ShareOwnerId);
+            var shareOwner = await _shareownerContext.ShareOwners
+                .Include(owner => owner.Reservations)
+                .SingleOrDefaultAsync(ci => ci.Id == reservation.ShareOwnerId);
 
             if (shareOwner == null)
             {
@@ -86,9 +88,9 @@ namespace Microsoft.eShopOnContainers.Services.ShareOwner.API.Controllers
                 ShareOwnerId = shareOwner.Id
             };
 
-            await _shareownerContext.Reservations.AddAsync(reserve);
-
-            //Publish some event to notify that "Real" corrency have changed.. 
+             shareOwner.Reservations.Add(reserve);
+             _shareownerContext.ShareOwners.Update(shareOwner);
+             //Publish some event to notify that "Real" corrency have changed.. 
             //var @event = new AccountCreditChangedIntegrationEvent(item.StockTraderId, item.Credit - deposit, item.Credit);
            // await _shareownerIntegrationEventService.SaveEventAndShareOwnerContextChangesAsync(@event);
             //await _shareownerIntegrationEventService.PublishThroughEventBusAsync(@event);

@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using ShareOwner.API.Infrastructure.ActionResults;
 using ShareOwner.API.Infrastructure.Exceptions;
 using Microsoft.AspNetCore.Hosting;
@@ -27,7 +28,7 @@ namespace ShareOwner.API.Infrastructure.Filters
                 context.Exception,
                 context.Exception.Message);
 
-            if (context.Exception.GetType() == typeof(ShareOwnerDomainException))
+            if (context.Exception.GetType() == typeof(ShareOwnerDomainException) || context.Exception.GetType() == typeof(ValidationException))
             {
                 var problemDetails = new ValidationProblemDetails()
                 {
