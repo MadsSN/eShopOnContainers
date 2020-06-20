@@ -15,7 +15,6 @@ namespace Microsoft.eShopOnContainers.Services.Identity.API.Data
     {
         public async Task SeedAsync(ConfigurationDbContext context,IConfiguration configuration)
         {
-           
             //callbacks urls from config:
             var clientUrls = new Dictionary<string, string>();
 

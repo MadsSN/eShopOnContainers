@@ -81,7 +81,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Services\Basket\Basket.API\Basket.API.csproj" />
     <ProjectReference Include="..\..\..\Services\Catalog\Catalog.API\Catalog.API.csproj" />
     <ProjectReference Include="..\..\..\Services\Location\Locations.API\Locations.API.csproj" />
     <ProjectReference Include="..\..\..\Services\Marketing\Marketing.API\Marketing.API.csproj" />

@@ -11,9 +11,6 @@ services:
   nosqldata:
     image: mongo
 
-  basketdata:
-    image: redis:alpine
-
   rabbitmq:
     image: rabbitmq:3-management-alpine
 
@@ -24,16 +21,6 @@ services:
       dockerfile: Services/Identity/Identity.API/Dockerfile
     depends_on:
       - sqldata
-
-  basket-api:
-    image: ${REGISTRY:-eshop}/basket.api:${PLATFORM:-linux}-${TAG:-latest}
-    build:
-      context: .
-      dockerfile: Services/Basket/Basket.API/Dockerfile
-    depends_on:
-      - basketdata
-      - identity-api
-      - rabbitmq
 
   catalog-api:
     image: ${REGISTRY:-eshop}/catalog.api:${PLATFORM:-linux}-${TAG:-latest}
@@ -172,7 +159,6 @@ services:
       - ordering-api
       - marketing-api
       - catalog-api
-      - basket-api
 
   webshoppingagg:
     image: ${REGISTRY:-eshop}/webshoppingagg:${PLATFORM:-linux}-${TAG:-latest}
@@ -187,7 +173,6 @@ services:
       - ordering-api
       - marketing-api
       - catalog-api
-      - basket-api
 
   ordering-signalrhub:
     image: ${REGISTRY:-eshop}/ordering.signalrhub:${PLATFORM:-linux}-${TAG:-latest}
@@ -202,7 +187,6 @@ services:
       - ordering-api
       - marketing-api
       - catalog-api
-      - basket-api
 
   webstatus:
     image: ${REGISTRY:-eshop}/webstatus:${PLATFORM:-linux}-${TAG:-latest}

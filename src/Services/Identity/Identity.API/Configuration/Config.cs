@@ -12,6 +12,7 @@ namespace Microsoft.eShopOnContainers.Services.Identity.API.Configuration
             return new List<ApiResource>
             {
                 new ApiResource("orders", "Orders Service"),
+                new ApiResource("template1", "Template1 Service"),
                 new ApiResource("basket", "Basket Service"),
                 new ApiResource("marketing", "Marketing Service"),
                 new ApiResource("locations", "Locations Service"),
